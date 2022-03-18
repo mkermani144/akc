@@ -31,6 +31,7 @@ akc friend chi Sara # Add a chi called Sara
 ### Get suggestion for connection
 ```bash
 akc suggest # Suggest you both a friend and a method
+akc suggest random # Like `akc suggest`
 akc suggest hangout # Suggest you a friend for hanging out with
 akc suggest videocall # Same, but a video call instead of hang out
 akc suggest call
