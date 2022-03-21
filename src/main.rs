@@ -1,28 +1,18 @@
-use std::env;
+use structopt::{StructOpt};
 
 mod friend;
-mod suggest;
+mod config;
 
-fn print_help() {
-    println!("Usage: akc <command> <args>");
-    println!("Available commands are: help, friend, suggest");
+#[derive(StructOpt)]
+#[structopt(about = "A command-line tool for managing connections with friends.")]
+enum Akc {
+    Friend(friend::FriendCommand)
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = Akc::from_args();
 
-    if args.len() < 2 {
-        print_help();
-        return
-    }
-
-    let command = &args[1];
-    let child_commands = &args[2..];
-
-    match command.as_ref() {
-        "" | "help" => print_help(),
-        "friend" => friend::handle(child_commands),
-        "suggest" => suggest::handle(child_commands),
-        _ => println!("Invalid command: {}", command)
+    match args {
+        Akc::Friend(friend_args) => friend::handle(friend_args)
     }
 }
