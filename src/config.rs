@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use std::{io::ErrorKind};
 use std::fs;
 use serde::{Deserialize, Serialize};
+use rand::prelude::*;
+use rand::distributions::WeightedIndex;
 
 use dirs::config_dir;
 
@@ -85,4 +87,12 @@ pub fn add_chi(name: String) {
         chance: default_chance::CHI,
         level: "chi".to_owned()
     })
+}
+
+pub fn suggest() {
+    let config = read_config();
+    let mut rng = thread_rng();
+
+    let weighted_dist = WeightedIndex::new(config.iter().map(| friend_info | friend_info.chance)).expect("Failed to suggest a friend");
+    println!("Suggested friend: {}", config[weighted_dist.sample(&mut rng)].name);
 }
