@@ -1,6 +1,6 @@
 use core::panic;
 use std::path::PathBuf;
-use std::{io::ErrorKind, path::Path};
+use std::{io::ErrorKind};
 use std::fs;
 use serde::{Deserialize, Serialize};
 
@@ -38,8 +38,20 @@ pub fn read_config() -> Vec<FriendInfo> {
     config
 }
 
-fn add_friend(friend_info: FriendInfo) {
+fn write_config(config: Vec<FriendInfo>) {
     let config_path = get_config_path();
+    let config_string = serde_json::to_string(&config).expect("Failed to serialize friend");
+    fs::write(&config_path, &config_string).unwrap_or_else(| error | {
+        if error.kind() == ErrorKind::NotFound {
+            fs::File::create(&config_path).expect("Failed to create config file");
+            fs::write(&config_path, &config_string).expect("Failed to write to config file");
+        } else {
+            panic!("Failed to write to config file")
+        }
+    });
+}
+
+fn add_friend(friend_info: FriendInfo) {
     let mut config = read_config();
     let is_duplicate = config.iter().any(| friend_info_inner | friend_info_inner.name == friend_info.name);
 
@@ -47,15 +59,7 @@ fn add_friend(friend_info: FriendInfo) {
         println!("Name \"{}\" already exists, please use a different name", friend_info.name)
     } else {
         config.push(friend_info);
-        let config_string = serde_json::to_string(&config).expect("Failed to serialize friend");
-        fs::write(&config_path, &config_string).unwrap_or_else(| error | {
-            if error.kind() == ErrorKind::NotFound {
-                fs::File::create(&config_path).expect("Failed to create config file");
-                fs::write(&config_path, &config_string).expect("Failed to write to config file");
-            } else {
-                panic!("Failed to write to config file")
-            }
-        })
+        write_config(config);
     }
 }
 
