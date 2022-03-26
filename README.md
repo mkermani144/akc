@@ -40,7 +40,7 @@ akc suggest # Suggest you a friend to connect with
 
 ## Record a memory with a friend
 ```bash
-akc memory hangout Negar # Record a hangout with Negar
+akc memory hangout Negar Sara # Record a hangout with Negar and Sara
 akc memory video-call Arash # Record a video call with Arash
 akc memory call Arash # Record a call with Arash
 akc memory text Sara # Record a call with Arash
