@@ -103,9 +103,10 @@ pub fn add_chi(name: String) {
 
 pub fn suggest() {
     let config = read_config();
+    let filtered_config: Vec<&FriendInfo> = config.iter().filter(| friend_info | friend_info.chance > default_reduction::TEXT ).collect();
     let mut rng = thread_rng();
 
-    let weighted_dist = WeightedIndex::new(config.iter().map(| friend_info | friend_info.chance)).expect("Failed to suggest a friend");
+    let weighted_dist = WeightedIndex::new(filtered_config.iter().map(| friend_info | friend_info.chance)).expect("Failed to suggest a friend");
     println!("Suggested friend: {}", config[weighted_dist.sample(&mut rng)].name);
 }
 
