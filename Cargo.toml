@@ -1,9 +1,19 @@
 [package]
 name = "akc"
+description = "A command-line tool for managing connections with friends."
 version = "0.1.0"
+authors = ["Mohammad Kermani <mkermani144@gmail.com>"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+readme = "README.md"
+
+homepage = "https://github.com/mkermani144/akc"
+repository = "https://github.com/mkermani144/akc"
+documentation = "https://github.com/mkermani144/akc#usage"
+
+keywords = ["cli", "friendship"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 dirs = "4.0.0"
