@@ -1,6 +1,8 @@
 # akc
 A command-line tool for managing connections with friends.
 
+**This is still a work in progress. There may be lots of unexpected behaviors when you use it.**
+
 # Table of contents
 - [akc](#akc)
 - [Table of contents](#table-of-contents)
@@ -19,7 +21,9 @@ They are terms some of my teammates and colleagues at the company use to refer t
 _Note: In Persian, aji means sister (my teammates and colleagues who invented the terms are girls, so they used aji instead of male equivalent "dada", meaning brother in Persian), ki means who, and chi means what._
 
 # Installation
-_TODO_
+```
+cargo install akc
+```
 
 # Usage
 `akc` works by keeping your friends' names, suggesting you connect them based on their closeness. The closer and less suggested by `akc` they are, the more chance `akc` suggests you connect them. It's that simple.  
