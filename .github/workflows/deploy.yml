@@ -1,0 +1,45 @@
+name: Deploy
+
+on: push
+
+jobs:
+  deploy:
+    strategy:
+      matrix:
+        include:
+          - runs_on: ubuntu-latest
+            os: linux
+            target: x86_64-unknown-linux-gnu
+            file_name: akc
+          - runs_on: windows-latest
+            os: windows
+            target: x86_64-pc-windows-msvc
+            file_name: akc.exe
+          - runs_on: macos-latest
+            os: macos
+            target: x86_64-apple-darwin
+            file_name: akc
+
+    runs-on: ${{ matrix.runs_on }}
+
+    env:
+      ARTIFACT_NAME: akc-${{ github.ref_name }}-${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }} --locked
+          mkdir ${{ env.ARTIFACT_NAME }}
+          cp target/${{ matrix.target }}/release/${{ matrix.file_name }} ${{ env.ARTIFACT_NAME }}/
+          cp README.md ${{ env.ARTIFACT_NAME }}/
+          cp LICENSE ${{ env.ARTIFACT_NAME }}/
+          tar czvf ${{ env.ARTIFACT_NAME }}.tar.gz ${{ env.ARTIFACT_NAME }}
+
+      - name: Deploy
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ env.ARTIFACT_NAME }}.tar.gz
