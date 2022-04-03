@@ -21,6 +21,7 @@ They are terms some of my teammates and colleagues at the company use to refer t
 _Note: In Persian, aji means sister (my teammates and colleagues who invented the terms are girls, so they used aji instead of male equivalent "dada", meaning brother in Persian), ki means who, and chi means what._
 
 # Installation
+You can download the executable for your platform in the [releases](https://github.com/mkermani144/akc/releases) page. In addition, if you have rust installed, you can install `akc` through `cargo`:
 ```
 cargo install akc
 ```
