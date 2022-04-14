@@ -19,4 +19,4 @@ categories = ["command-line-utilities"]
 confy = "0.4.0"
 rand = "0.8.5"
 serde = { version = "1.0.136", features = ["derive"] }
-structopt = "0.3"
+clap = { version = "3.1.8", features = ["derive"] }

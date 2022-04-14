@@ -1,24 +1,24 @@
-use structopt::{StructOpt};
+use clap::Parser;
 
 mod config;
 mod friend;
 mod memory;
 mod suggest;
 
-#[derive(StructOpt)]
-#[structopt(about = "A command-line tool for managing connections with friends.")]
-enum Akc {
-    Friend(friend::FriendCommand),
+#[derive(Parser)]
+#[clap(about, version)]
+enum AkcCommand {
+    Friend(friend::Friend),
     Suggest(suggest::SuggestCommand),
-    Memory(memory::MemoryCommand)
+    Memory(memory::Memory)
 }
 
 fn main() {
-    let args = Akc::from_args();
+    let args = AkcCommand::parse();
 
     match args {
-        Akc::Friend(friend_args) => friend::handle(friend_args),
-        Akc::Suggest(_) => suggest::handle(),
-        Akc::Memory(memory_args) => memory::handle(memory_args)
+        AkcCommand::Friend(friend_args) => friend::handle(friend_args),
+        AkcCommand::Suggest(_) => suggest::handle(),
+        AkcCommand::Memory(memory_args) => memory::handle(memory_args)
     }
 }

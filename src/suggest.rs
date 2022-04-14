@@ -1,9 +1,9 @@
-use structopt::StructOpt;
+use clap::Parser;
 
 use crate::config;
 
-#[derive(StructOpt)]
-#[structopt(about = "Suggests a friend to connect with randomly")]
+#[derive(Parser)]
+#[clap(about = "Suggests a friend to connect with randomly")]
 pub struct SuggestCommand {}
 
 pub fn handle() {
