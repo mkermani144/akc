@@ -4,6 +4,8 @@ use rand::prelude::*;
 use rand::distributions::WeightedIndex;
 use confy::{load, store};
 
+mod utils;
+
 mod default_chance {
     pub const AJI: f64 = 50.0;
     pub const KI: f64 = 5.0;
@@ -40,14 +42,9 @@ fn write_config(config: AkcConfig) {
     store(CONFIG_NAME, &config).unwrap_or_else(|_| panic!("Failed to write config file"));
 }
 
-fn is_name_duplicate(name: &str) -> bool {
-    let config = read_config();
-    config.friends.iter().any(| friend_info | friend_info.name == name)
-}
-
 fn add_friend(friend_info: FriendInfo) {
     let mut config = read_config();
-    let is_duplicate = is_name_duplicate(&friend_info.name);
+    let is_duplicate = utils::is_name_duplicate(&config, &friend_info.name);
 
     if is_duplicate {
         println!("Name \"{}\" already exists, please use a different name", friend_info.name)
@@ -83,17 +80,16 @@ pub fn add_chi(name: String) {
 
 pub fn suggest() {
     let config = read_config();
-    let filtered_config: Vec<&FriendInfo> = config.friends.iter().filter(| friend_info | friend_info.chance > default_reduction::TEXT ).collect();
+    let filtered_config = utils::filter_config_by_enough_chance(&config);
     let mut rng = thread_rng();
 
     let weighted_dist = WeightedIndex::new(filtered_config.iter().map(| friend_info | friend_info.chance)).expect("Failed to suggest a friend");
     println!("Suggested friend: {}", config.friends[weighted_dist.sample(&mut rng)].name);
 }
 
-fn add_memory(reduction: f64, names: Vec<String>) {
+fn add_memory(reduction: f64, names: &[String]) {
     let mut config = read_config();
-    let all_names = config.friends.iter().map(| friend_info | friend_info.name.clone()).collect::<Vec<String>>();
-    let unknown_names = names.iter().filter(| name | !all_names.iter().any(| inner_name | inner_name == *name )).collect::<Vec<&String>>();
+    let unknown_names = utils::get_unknown_names(&config, names);
 
     if !unknown_names.is_empty() {
         let unknown_names_string = unknown_names.iter()
@@ -103,46 +99,28 @@ fn add_memory(reduction: f64, names: Vec<String>) {
         println!("The following names are not added yet: {}", unknown_names_string);
     } else {
         let total_reduction = reduction * names.len() as f64;
-        let current_total_chance = config.friends.iter()
-            .filter(| friend_info | !names.contains(&friend_info.name))
-            .map(| friend_info | friend_info.chance)
-            .sum::<f64>();
+        let current_total_chance = utils::get_config_total_chance(&config, names);
         let unit_added_chance = total_reduction / current_total_chance;
 
-        config.friends.iter_mut()
-            .filter(| friend_info | !names.contains(&friend_info.name))
-            .for_each(| friend_info | {
-                let level_chance = match friend_info.level.as_str() {
-                    "aji" => default_chance::AJI,
-                    "ki" => default_chance::KI,
-                    "chi" => default_chance::CHI,
-                    _ => 0.0
-                };
-                friend_info.chance += level_chance * unit_added_chance;
-            });
-
-        config.friends.iter_mut()
-            .filter(| friend_info | names.contains(&friend_info.name))
-            .for_each(| friend_info | {
-                friend_info.chance -= reduction;
-            });
+        utils::increase_chances_by_unit(&mut config, unit_added_chance, names);
+        utils::decrease_chances_by_reduction(&mut config, reduction, names);
 
         write_config(config)
     }
 }
 
-pub fn add_hangout(names: Vec<String>) {
+pub fn add_hangout(names: &[String]) {
     add_memory(default_reduction::HANGOUT, names)
 }
 
-pub fn add_video_call(names: Vec<String>) {
+pub fn add_video_call(names: &[String]) {
     add_memory(default_reduction::VIDEO_CALL, names)
 }
 
-pub fn add_call(names: Vec<String>) {
+pub fn add_call(names: &[String]) {
     add_memory(default_reduction::CALL, names)
 }
 
-pub fn add_text(names: Vec<String>) {
+pub fn add_text(names: &[String]) {
     add_memory(default_reduction::TEXT, names)
 }

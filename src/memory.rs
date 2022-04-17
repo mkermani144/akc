@@ -24,9 +24,9 @@ pub struct Memory {
 
 pub fn handle(args: Memory) {
     match args.command {
-        MemoryCommand::Hangout(names_wrapper) => config::add_hangout(names_wrapper.names),
-        MemoryCommand::VideoCall(names_wrapper) => config::add_video_call(names_wrapper.names),
-        MemoryCommand::Call(names_wrapper) => config::add_call(names_wrapper.names),
-        MemoryCommand::Text(names_wrapper) => config::add_text(names_wrapper.names),
+        MemoryCommand::Hangout(names_wrapper) => config::add_hangout(&names_wrapper.names),
+        MemoryCommand::VideoCall(names_wrapper) => config::add_video_call(&names_wrapper.names),
+        MemoryCommand::Call(names_wrapper) => config::add_call(&names_wrapper.names),
+        MemoryCommand::Text(names_wrapper) => config::add_text(&names_wrapper.names),
     }
 }
