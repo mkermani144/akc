@@ -8,11 +8,12 @@ pub struct FriendCommandBase {
 }
 
 #[derive(Subcommand)]
-#[clap(about = "Add a friend of specific type")]
+#[clap(about = "Add or list friends")]
 pub enum FriendCommand {
     Aji(FriendCommandBase),
     Ki(FriendCommandBase),
     Chi(FriendCommandBase),
+    Ls,
 }
 
 #[derive(Parser)]
@@ -26,5 +27,6 @@ pub fn handle(args: Friend) {
         FriendCommand::Aji(name_wrapper) => config::add_aji(name_wrapper.name),
         FriendCommand::Ki(name_wrapper) => config::add_ki(name_wrapper.name),
         FriendCommand::Chi(name_wrapper) => config::add_chi(name_wrapper.name),
+        FriendCommand::Ls => config::list_friends(),
     }
 }

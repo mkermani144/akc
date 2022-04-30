@@ -1,16 +1,30 @@
 use super::{AkcConfig, FriendInfo, default_chance, default_reduction};
 
 pub fn is_name_duplicate(config: &AkcConfig, name: &str) -> bool {
-  config.friends.iter().any(| friend_info | friend_info.name == name)
+  config
+    .friends
+    .iter()
+    .any(| friend_info | friend_info.name == name)
 }
 
 pub fn filter_config_by_enough_chance(config: &AkcConfig) -> Vec<&FriendInfo> {
-  config.friends.iter().filter(| friend_info | friend_info.chance >= default_reduction::TEXT).collect()
+  config
+    .friends
+    .iter()
+    .filter(| friend_info | friend_info.chance >= default_reduction::TEXT)
+    .collect()
 }
 
 pub fn get_unknown_names<'a>(config: &AkcConfig, names: &'a[String]) -> Vec<&'a String> {
-  let all_names = config.friends.iter().map(| friend_info | friend_info.name.clone()).collect::<Vec<String>>();
-  names.iter().filter(| name | !all_names.iter().any(| inner_name | inner_name == *name )).collect::<Vec<&String>>()
+  let all_names = config
+    .friends
+    .iter()
+    .map(| friend_info | friend_info.name.clone())
+    .collect::<Vec<String>>();
+  names
+    .iter()
+    .filter(| name | !all_names.iter().any(| inner_name | inner_name == *name ))
+    .collect::<Vec<&String>>()
 }
 
 pub fn get_config_total_chance(config: &AkcConfig, excluded_names: &[String]) -> f64 {
@@ -40,6 +54,17 @@ pub fn decrease_chances_by_reduction(config: &mut AkcConfig, reduction: f64, nam
     .for_each(| friend_info | {
         friend_info.chance -= reduction;
     })
+}
+
+pub fn list_friends(config: &AkcConfig) -> String {
+  let mut friends_vector = config
+    .friends
+    .iter()
+    .map(| friend_info | friend_info.name.to_owned())
+    .collect::<Vec<String>>();
+  friends_vector.sort();
+
+  friends_vector.join("\n")
 }
 
 #[cfg(test)]
@@ -203,5 +228,31 @@ mod test {
     assert_eq!(config.friends[0].chance, default_chance::AJI);
     assert_eq!(config.friends[1].chance, default_chance::KI - 1.0);
     assert_eq!(config.friends[2].chance, default_chance::CHI);
+  }
+
+  #[test]
+  fn test_list_friends() {
+    let config = AkcConfig {
+      friends: vec![
+        FriendInfo {
+          name: "John".to_owned(),
+          chance: default_chance::AJI,
+          level: "aji".to_owned()
+        },
+        FriendInfo {
+          name: "Doe".to_owned(),
+          chance: default_chance::KI,
+          level: "ki".to_owned()
+        },
+        FriendInfo {
+          name: "Doe2".to_owned(),
+          chance: default_chance::CHI,
+          level: "chi".to_owned()
+        },
+      ]
+    };
+
+    let friends = list_friends(&config);
+    assert_eq!(friends, "Doe\nDoe2\nJohn".to_owned());
   }
 }

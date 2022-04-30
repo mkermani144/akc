@@ -78,6 +78,11 @@ pub fn add_chi(name: String) {
     })
 }
 
+pub fn list_friends() {
+    let config = read_config();
+    println!("{}", utils::list_friends(&config));
+}
+
 pub fn suggest() {
     let config = read_config();
     let filtered_config = utils::filter_config_by_enough_chance(&config);
