@@ -1,7 +1,7 @@
 [package]
 name = "akc"
 description = "A command-line tool for managing connections with friends."
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Mohammad Kermani <mkermani144@gmail.com>"]
 edition = "2021"
 
