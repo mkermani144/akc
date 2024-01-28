@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Show error in case of a memory without any names
+
+### Miscellaneous Tasks
+
+- Add changelog and git cliff
+
 ## [0.2.0] - 2024-01-16
 
 ### Miscellaneous Tasks
