@@ -1,4 +1,7 @@
 # akc
+
+[![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)  
+
 A command-line tool for managing connections with friends.
 
 **This is still a work in progress. There may be lots of unexpected behaviors when you use it.**
