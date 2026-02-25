@@ -6,11 +6,11 @@ mod memory;
 mod suggest;
 
 #[derive(Parser)]
-#[clap(about, version)]
+#[command(about, version)]
 enum AkcCommand {
     Friend(friend::Friend),
     Suggest(suggest::SuggestCommand),
-    Memory(memory::Memory)
+    Memory(memory::Memory),
 }
 
 fn main() {
@@ -19,6 +19,6 @@ fn main() {
     match args {
         AkcCommand::Friend(friend_args) => friend::handle(friend_args),
         AkcCommand::Suggest(_) => suggest::handle(),
-        AkcCommand::Memory(memory_args) => memory::handle(memory_args)
+        AkcCommand::Memory(memory_args) => memory::handle(memory_args),
     }
 }

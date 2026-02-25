@@ -4,11 +4,11 @@ use crate::config;
 
 #[derive(Args)]
 pub struct FriendCommandBase {
-    name: String
+    name: String,
 }
 
 #[derive(Subcommand)]
-#[clap(about = "Add or list friends")]
+#[command(about = "Add or list friends")]
 pub enum FriendCommand {
     Aji(FriendCommandBase),
     Ki(FriendCommandBase),
@@ -18,7 +18,7 @@ pub enum FriendCommand {
 
 #[derive(Parser)]
 pub struct Friend {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     command: FriendCommand,
 }
 

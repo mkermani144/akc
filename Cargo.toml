@@ -16,7 +16,7 @@ keywords = ["cli", "friendship"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-confy = "0.4.0"
-rand = "0.8.5"
-serde = { version = "1.0.136", features = ["derive"] }
-clap = { version = "3.1.8", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
+confy = "0.6"
+rand = "0.9"
+serde = { version = "1", features = ["derive"] }

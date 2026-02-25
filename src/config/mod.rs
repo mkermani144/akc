@@ -1,7 +1,5 @@
 use confy::{load, store};
-use core::panic;
-use rand::distributions::WeightedIndex;
-use rand::prelude::*;
+use rand::distr::{weighted::WeightedIndex, Distribution};
 use serde::{Deserialize, Serialize};
 
 mod utils;
@@ -34,11 +32,11 @@ pub struct AkcConfig {
 }
 
 pub fn read_config() -> AkcConfig {
-    load(CONFIG_NAME).unwrap_or_else(|_| AkcConfig::default())
+    load(CONFIG_NAME, None).unwrap_or_else(|_| AkcConfig::default())
 }
 
 fn write_config(config: AkcConfig) {
-    store(CONFIG_NAME, &config).unwrap_or_else(|_| panic!("Failed to write config file"));
+    store(CONFIG_NAME, None, &config).unwrap_or_else(|_| panic!("Failed to write config file"));
 }
 
 fn add_friend(friend_info: FriendInfo) {
@@ -88,7 +86,7 @@ pub fn list_friends() {
 pub fn suggest() {
     let config = read_config();
     let filtered_config = utils::filter_config_by_enough_chance(&config);
-    let mut rng = thread_rng();
+    let mut rng = rand::rng();
 
     let weighted_dist =
         WeightedIndex::new(filtered_config.iter().map(|friend_info| friend_info.chance))

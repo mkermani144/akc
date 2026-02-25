@@ -4,11 +4,11 @@ use crate::config;
 
 #[derive(Args)]
 pub struct MemoryCommandBase {
-    names: Vec<String>
+    names: Vec<String>,
 }
 
 #[derive(Subcommand)]
-#[clap(about = "Add a memory with one or more friends")]
+#[command(about = "Add a memory with one or more friends")]
 pub enum MemoryCommand {
     Hangout(MemoryCommandBase),
     VideoCall(MemoryCommandBase),
@@ -18,7 +18,7 @@ pub enum MemoryCommand {
 
 #[derive(Parser)]
 pub struct Memory {
-    #[clap(subcommand)]
+    #[command(subcommand)]
     command: MemoryCommand,
 }
 
