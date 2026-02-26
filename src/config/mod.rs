@@ -54,6 +54,7 @@ fn db_path() -> PathBuf {
     }
 }
 
+/// Prints the resolved SQLite database path.
 pub fn print_db_path() {
     println!("{}", db_path().display());
 }
@@ -273,6 +274,7 @@ async fn add_friend(friend_info: FriendInfo) {
     }
 }
 
+/// Removes a friend by exact name.
 pub async fn remove_friend(name: String) {
     let mut config = match read_config().await {
         Ok(config) => config,
@@ -294,6 +296,7 @@ pub async fn remove_friend(name: String) {
     }
 }
 
+/// Edits friend name and/or level.
 pub async fn edit_friend(name: String, new_name: Option<String>, new_level: Option<String>) {
     if new_name.is_none() && new_level.is_none() {
         println!("No changes requested");
@@ -340,24 +343,28 @@ pub async fn edit_friend(name: String, new_name: Option<String>, new_level: Opti
     }
 }
 
+/// Adds an `aji` friend.
 pub async fn add_aji(name: String) {
     if let Some(friend_info) = make_friend(name, "aji") {
         add_friend(friend_info).await;
     }
 }
 
+/// Adds a `ki` friend.
 pub async fn add_ki(name: String) {
     if let Some(friend_info) = make_friend(name, "ki") {
         add_friend(friend_info).await;
     }
 }
 
+/// Adds a `chi` friend.
 pub async fn add_chi(name: String) {
     if let Some(friend_info) = make_friend(name, "chi") {
         add_friend(friend_info).await;
     }
 }
 
+/// Adds multiple friends with the same level.
 pub async fn add_many_friends(level: String, names: Vec<String>) {
     if names.is_empty() {
         println!("Please specify at least one name");
@@ -402,6 +409,7 @@ pub async fn add_many_friends(level: String, names: Vec<String>) {
     }
 }
 
+/// Lists friends, optionally filtered by level and/or sorted by chance.
 pub async fn list_friends(level_filter: Option<String>, sort_chance: bool) {
     let config = match read_config().await {
         Ok(config) => config,
@@ -423,6 +431,7 @@ pub async fn list_friends(level_filter: Option<String>, sort_chance: bool) {
     println!("{rendered_list}");
 }
 
+/// Searches friends by case-insensitive partial name.
 pub async fn search_friends(query: String) {
     let config = match read_config().await {
         Ok(config) => config,
@@ -435,6 +444,7 @@ pub async fn search_friends(query: String) {
     println!("{}", utils::search_friends(&config, &query));
 }
 
+/// Suggests one friend using weighted random chance.
 pub async fn suggest() {
     let config = match read_config().await {
         Ok(config) => config,
@@ -506,22 +516,27 @@ async fn add_memory(kind: &str, reduction: f64, names: &[String]) {
     }
 }
 
+/// Records a `hangout` memory.
 pub async fn add_hangout(names: &[String]) {
     add_memory("hangout", default_reduction::HANGOUT, names).await
 }
 
+/// Records a `video-call` memory.
 pub async fn add_video_call(names: &[String]) {
     add_memory("video-call", default_reduction::VIDEO_CALL, names).await
 }
 
+/// Records a `call` memory.
 pub async fn add_call(names: &[String]) {
     add_memory("call", default_reduction::CALL, names).await
 }
 
+/// Records a `text` memory.
 pub async fn add_text(names: &[String]) {
     add_memory("text", default_reduction::TEXT, names).await
 }
 
+/// Undoes the latest recorded memory.
 pub async fn undo_memory() {
     let memories = match read_memories().await {
         Ok(memories) => memories,
@@ -552,6 +567,7 @@ pub async fn undo_memory() {
     }
 }
 
+/// Removes a memory by database id.
 pub async fn remove_memory(id: i64) {
     match delete_memory(id).await {
         Ok(true) => {}

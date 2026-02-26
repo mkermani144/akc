@@ -14,6 +14,7 @@ pub struct MemoryIdCommandBase {
 
 #[derive(Subcommand)]
 #[command(about = "Add a memory with one or more friends")]
+/// Memory-related subcommands.
 pub enum MemoryCommand {
     Hangout(MemoryCommandBase),
     VideoCall(MemoryCommandBase),
@@ -25,11 +26,13 @@ pub enum MemoryCommand {
 }
 
 #[derive(Parser)]
+/// Root wrapper for `akc memory ...`.
 pub struct Memory {
     #[command(subcommand)]
     command: MemoryCommand,
 }
 
+/// Executes parsed memory commands.
 pub async fn handle(args: Memory) {
     match args.command {
         MemoryCommand::Hangout(names_wrapper) => config::add_hangout(&names_wrapper.names).await,

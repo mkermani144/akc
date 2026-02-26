@@ -8,6 +8,7 @@ pub struct FriendCommandBase {
 }
 
 #[derive(ValueEnum, Clone)]
+/// Supported friend closeness levels.
 pub enum FriendLevel {
     Aji,
     Ki,
@@ -50,6 +51,7 @@ pub struct ChangeTypeCommand {
 
 #[derive(Subcommand)]
 #[command(about = "Add or list friends")]
+/// Friend-related subcommands.
 pub enum FriendCommand {
     Aji(FriendCommandBase),
     Ki(FriendCommandBase),
@@ -64,11 +66,13 @@ pub enum FriendCommand {
 }
 
 #[derive(Parser)]
+/// Root wrapper for `akc friend ...`.
 pub struct Friend {
     #[command(subcommand)]
     command: FriendCommand,
 }
 
+/// Executes parsed friend commands.
 pub async fn handle(args: Friend) {
     match args.command {
         FriendCommand::Aji(name_wrapper) => config::add_aji(name_wrapper.name).await,
