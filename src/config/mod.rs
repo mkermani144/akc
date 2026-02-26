@@ -30,6 +30,12 @@ pub struct FriendInfo {
     level: String,
 }
 
+struct MemoryInfo {
+    id: i64,
+    kind: String,
+    names: Vec<String>,
+}
+
 #[derive(Default)]
 pub struct AkcConfig {
     friends: Vec<FriendInfo>,
@@ -99,6 +105,22 @@ async fn read_config() -> Result<AkcConfig, sqlx::Error> {
     Ok(AkcConfig { friends })
 }
 
+async fn read_memories() -> Result<Vec<MemoryInfo>, sqlx::Error> {
+    let pool = open_pool().await?;
+    let rows = sqlx::query("SELECT id, kind, names FROM memories ORDER BY id ASC")
+        .fetch_all(&pool)
+        .await?;
+    let memories = rows
+        .into_iter()
+        .map(|row| MemoryInfo {
+            id: row.get("id"),
+            kind: row.get("kind"),
+            names: deserialize_memory_names(&row.get::<String, _>("names")),
+        })
+        .collect();
+    Ok(memories)
+}
+
 async fn write_config(config: &AkcConfig) -> Result<(), sqlx::Error> {
     let pool = open_pool().await?;
     let mut transaction = pool.begin().await?;
@@ -131,6 +153,26 @@ fn serialize_memory_names(names: &[String]) -> String {
     names.join(MEMORY_NAMES_SEPARATOR)
 }
 
+fn deserialize_memory_names(names: &str) -> Vec<String> {
+    if names.is_empty() {
+        return Vec::new();
+    }
+    names
+        .split(MEMORY_NAMES_SEPARATOR)
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+fn reduction_from_kind(kind: &str) -> Option<f64> {
+    match kind {
+        "hangout" => Some(default_reduction::HANGOUT),
+        "video-call" => Some(default_reduction::VIDEO_CALL),
+        "call" => Some(default_reduction::CALL),
+        "text" => Some(default_reduction::TEXT),
+        _ => None,
+    }
+}
+
 async fn save_memory(kind: &str, names: &[String]) -> Result<(), sqlx::Error> {
     let pool = open_pool().await?;
     sqlx::query("INSERT INTO memories (kind, names) VALUES (?1, ?2)")
@@ -139,6 +181,52 @@ async fn save_memory(kind: &str, names: &[String]) -> Result<(), sqlx::Error> {
         .execute(&pool)
         .await?;
     Ok(())
+}
+
+async fn delete_memory(id: i64) -> Result<bool, sqlx::Error> {
+    let pool = open_pool().await?;
+    let result = sqlx::query("DELETE FROM memories WHERE id = ?1")
+        .bind(id)
+        .execute(&pool)
+        .await?;
+    Ok(result.rows_affected() > 0)
+}
+
+fn reset_chances_to_level_defaults(config: &mut AkcConfig) {
+    for friend in &mut config.friends {
+        friend.chance = level_default_chance(&friend.level).unwrap_or(0.0);
+    }
+}
+
+fn apply_memory_to_config(config: &mut AkcConfig, kind: &str, names: &[String]) {
+    let Some(reduction) = reduction_from_kind(kind) else {
+        return;
+    };
+    if names.is_empty() {
+        return;
+    }
+    let unknown_names = utils::get_unknown_names(config, names);
+    if !unknown_names.is_empty() {
+        return;
+    }
+
+    let total_reduction = reduction * names.len() as f64;
+    let current_total_chance = utils::get_config_total_chance(config, names);
+    let unit_added_chance = get_unit_added_chance(total_reduction, current_total_chance);
+    utils::increase_chances_by_unit(config, unit_added_chance, names);
+    utils::decrease_chances_by_reduction(config, reduction, names);
+}
+
+async fn rebuild_chances_from_memories() -> Result<(), sqlx::Error> {
+    let mut config = read_config().await?;
+    let memories = read_memories().await?;
+    reset_chances_to_level_defaults(&mut config);
+
+    for memory in memories {
+        apply_memory_to_config(&mut config, &memory.kind, &memory.names);
+    }
+
+    write_config(&config).await
 }
 
 fn level_default_chance(level: &str) -> Option<f64> {
@@ -430,9 +518,39 @@ pub async fn add_text(names: &[String]) {
     add_memory("text", default_reduction::TEXT, names).await
 }
 
+pub async fn undo_memory() {
+    let memories = match read_memories().await {
+        Ok(memories) => memories,
+        Err(err) => {
+            eprintln!("Failed to read memories: {err}");
+            return;
+        }
+    };
+    let Some(last_memory) = memories.last() else {
+        println!("No memory to undo");
+        return;
+    };
+
+    match delete_memory(last_memory.id).await {
+        Ok(true) => {}
+        Ok(false) => {
+            println!("No memory to undo");
+            return;
+        }
+        Err(err) => {
+            eprintln!("Failed to delete memory: {err}");
+            return;
+        }
+    }
+
+    if let Err(err) = rebuild_chances_from_memories().await {
+        eprintln!("Failed to rebuild chances: {err}");
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use super::{get_unit_added_chance, serialize_memory_names};
+    use super::{deserialize_memory_names, get_unit_added_chance, serialize_memory_names};
 
     #[test]
     fn test_get_unit_added_chance_when_total_is_zero() {
@@ -448,5 +566,13 @@ mod test {
     fn test_serialize_memory_names() {
         let names = vec!["A".to_owned(), "B".to_owned()];
         assert_eq!(serialize_memory_names(&names), "A\nB");
+    }
+
+    #[test]
+    fn test_deserialize_memory_names() {
+        assert_eq!(
+            deserialize_memory_names("A\nB"),
+            vec!["A".to_owned(), "B".to_owned()]
+        );
     }
 }
