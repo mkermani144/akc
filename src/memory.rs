@@ -14,6 +14,7 @@ pub enum MemoryCommand {
     VideoCall(MemoryCommandBase),
     Call(MemoryCommandBase),
     Text(MemoryCommandBase),
+    Suggest,
 }
 
 #[derive(Parser)]
@@ -30,5 +31,6 @@ pub async fn handle(args: Memory) {
         }
         MemoryCommand::Call(names_wrapper) => config::add_call(&names_wrapper.names).await,
         MemoryCommand::Text(names_wrapper) => config::add_text(&names_wrapper.names).await,
+        MemoryCommand::Suggest => config::suggest().await,
     }
 }
