@@ -42,6 +42,12 @@ pub struct AddManyFriendsCommand {
     names: Vec<String>,
 }
 
+#[derive(Args)]
+pub struct ChangeTypeCommand {
+    name: String,
+    level: FriendLevel,
+}
+
 #[derive(Subcommand)]
 #[command(about = "Add or list friends")]
 pub enum FriendCommand {
@@ -49,6 +55,7 @@ pub enum FriendCommand {
     Ki(FriendCommandBase),
     Chi(FriendCommandBase),
     AddMany(AddManyFriendsCommand),
+    Type(ChangeTypeCommand),
     Rm(FriendCommandBase),
     Edit(EditFriendCommand),
     Search(SearchFriendsCommand),
@@ -74,6 +81,14 @@ pub async fn handle(args: Friend) {
                 FriendLevel::Chi => "chi".to_owned(),
             };
             config::add_many_friends(level, args.names).await
+        }
+        FriendCommand::Type(args) => {
+            let level = match args.level {
+                FriendLevel::Aji => "aji".to_owned(),
+                FriendLevel::Ki => "ki".to_owned(),
+                FriendLevel::Chi => "chi".to_owned(),
+            };
+            config::edit_friend(args.name, None, Some(level)).await
         }
         FriendCommand::Rm(name_wrapper) => config::remove_friend(name_wrapper.name).await,
         FriendCommand::Edit(args) => {
