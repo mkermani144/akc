@@ -39,6 +39,14 @@ fn write_config(config: AkcConfig) {
     store(CONFIG_NAME, None, &config).unwrap_or_else(|_| panic!("Failed to write config file"));
 }
 
+fn get_unit_added_chance(total_reduction: f64, current_total_chance: f64) -> f64 {
+    if current_total_chance <= f64::EPSILON {
+        0.0
+    } else {
+        total_reduction / current_total_chance
+    }
+}
+
 fn add_friend(friend_info: FriendInfo) {
     let mut config = read_config();
     let is_duplicate = utils::is_name_duplicate(&config, &friend_info.name);
@@ -118,7 +126,7 @@ fn add_memory(reduction: f64, names: &[String]) {
     } else {
         let total_reduction = reduction * names.len() as f64;
         let current_total_chance = utils::get_config_total_chance(&config, names);
-        let unit_added_chance = total_reduction / current_total_chance;
+        let unit_added_chance = get_unit_added_chance(total_reduction, current_total_chance);
 
         utils::increase_chances_by_unit(&mut config, unit_added_chance, names);
         utils::decrease_chances_by_reduction(&mut config, reduction, names);
@@ -141,4 +149,19 @@ pub fn add_call(names: &[String]) {
 
 pub fn add_text(names: &[String]) {
     add_memory(default_reduction::TEXT, names)
+}
+
+#[cfg(test)]
+mod test {
+    use super::get_unit_added_chance;
+
+    #[test]
+    fn test_get_unit_added_chance_when_total_is_zero() {
+        assert_eq!(get_unit_added_chance(1.0, 0.0), 0.0);
+    }
+
+    #[test]
+    fn test_get_unit_added_chance_when_total_is_positive() {
+        assert_eq!(get_unit_added_chance(1.0, 2.0), 0.5);
+    }
 }
