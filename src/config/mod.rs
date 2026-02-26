@@ -242,7 +242,7 @@ pub async fn add_chi(name: String) {
     .await;
 }
 
-pub async fn list_friends() {
+pub async fn list_friends(level_filter: Option<String>) {
     let config = match read_config().await {
         Ok(config) => config,
         Err(err) => {
@@ -250,7 +250,19 @@ pub async fn list_friends() {
             return;
         }
     };
-    println!("{}", utils::list_friends(&config));
+    let rendered_list = if let Some(level_filter) = level_filter {
+        let filtered_config = AkcConfig {
+            friends: config
+                .friends
+                .into_iter()
+                .filter(|friend| friend.level == level_filter)
+                .collect(),
+        };
+        utils::list_friends(&filtered_config)
+    } else {
+        utils::list_friends(&config)
+    };
+    println!("{rendered_list}");
 }
 
 pub async fn suggest() {

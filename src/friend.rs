@@ -23,6 +23,12 @@ pub struct EditFriendCommand {
     level: Option<FriendLevel>,
 }
 
+#[derive(Args)]
+pub struct ListFriendsCommand {
+    #[arg(long = "type")]
+    friend_type: Option<FriendLevel>,
+}
+
 #[derive(Subcommand)]
 #[command(about = "Add or list friends")]
 pub enum FriendCommand {
@@ -32,7 +38,7 @@ pub enum FriendCommand {
     Rm(FriendCommandBase),
     Edit(EditFriendCommand),
     #[command(alias = "ls")]
-    List,
+    List(ListFriendsCommand),
 }
 
 #[derive(Parser)]
@@ -55,6 +61,13 @@ pub async fn handle(args: Friend) {
             });
             config::edit_friend(args.name, args.new_name, level).await
         }
-        FriendCommand::List => config::list_friends().await,
+        FriendCommand::List(args) => {
+            let friend_type = args.friend_type.map(|level| match level {
+                FriendLevel::Aji => "aji".to_owned(),
+                FriendLevel::Ki => "ki".to_owned(),
+                FriendLevel::Chi => "chi".to_owned(),
+            });
+            config::list_friends(friend_type).await
+        }
     }
 }
