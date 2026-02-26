@@ -31,7 +31,8 @@ pub enum FriendCommand {
     Chi(FriendCommandBase),
     Rm(FriendCommandBase),
     Edit(EditFriendCommand),
-    Ls,
+    #[command(alias = "ls")]
+    List,
 }
 
 #[derive(Parser)]
@@ -54,6 +55,6 @@ pub async fn handle(args: Friend) {
             });
             config::edit_friend(args.name, args.new_name, level).await
         }
-        FriendCommand::Ls => config::list_friends().await,
+        FriendCommand::List => config::list_friends().await,
     }
 }
