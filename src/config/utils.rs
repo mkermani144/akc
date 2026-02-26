@@ -93,6 +93,18 @@ pub fn list_friends_by_chance(config: &AkcConfig) -> String {
         .join("\n")
 }
 
+pub fn search_friends(config: &AkcConfig, query: &str) -> String {
+    let query = query.to_lowercase();
+    let mut matches = config
+        .friends
+        .iter()
+        .filter(|friend| friend.name.to_lowercase().contains(&query))
+        .map(|friend| friend.name.clone())
+        .collect::<Vec<String>>();
+    matches.sort();
+    matches.join("\n")
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -308,5 +320,31 @@ mod test {
 
         let friends = list_friends_by_chance(&config);
         assert_eq!(friends, "Abe (5.00)\nDoe (5.00)\nJohn (1.50)");
+    }
+
+    #[test]
+    fn test_search_friends() {
+        let config = AkcConfig {
+            friends: vec![
+                FriendInfo {
+                    name: "John".to_owned(),
+                    chance: 1.5,
+                    level: "aji".to_owned(),
+                },
+                FriendInfo {
+                    name: "Johnny".to_owned(),
+                    chance: 5.0,
+                    level: "ki".to_owned(),
+                },
+                FriendInfo {
+                    name: "Abe".to_owned(),
+                    chance: 5.0,
+                    level: "chi".to_owned(),
+                },
+            ],
+        };
+
+        let friends = search_friends(&config, "joHn");
+        assert_eq!(friends, "John\nJohnny");
     }
 }

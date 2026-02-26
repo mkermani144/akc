@@ -31,6 +31,11 @@ pub struct ListFriendsCommand {
     sort_chance: bool,
 }
 
+#[derive(Args)]
+pub struct SearchFriendsCommand {
+    query: String,
+}
+
 #[derive(Subcommand)]
 #[command(about = "Add or list friends")]
 pub enum FriendCommand {
@@ -39,6 +44,7 @@ pub enum FriendCommand {
     Chi(FriendCommandBase),
     Rm(FriendCommandBase),
     Edit(EditFriendCommand),
+    Search(SearchFriendsCommand),
     #[command(alias = "ls")]
     List(ListFriendsCommand),
 }
@@ -63,6 +69,7 @@ pub async fn handle(args: Friend) {
             });
             config::edit_friend(args.name, args.new_name, level).await
         }
+        FriendCommand::Search(args) => config::search_friends(args.query).await,
         FriendCommand::List(args) => {
             let friend_type = args.friend_type.map(|level| match level {
                 FriendLevel::Aji => "aji".to_owned(),

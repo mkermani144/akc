@@ -263,6 +263,18 @@ pub async fn list_friends(level_filter: Option<String>, sort_chance: bool) {
     println!("{rendered_list}");
 }
 
+pub async fn search_friends(query: String) {
+    let config = match read_config().await {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("Failed to read data: {err}");
+            return;
+        }
+    };
+
+    println!("{}", utils::search_friends(&config, &query));
+}
+
 pub async fn suggest() {
     let config = match read_config().await {
         Ok(config) => config,
