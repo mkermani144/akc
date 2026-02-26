@@ -116,6 +116,15 @@ fn get_unit_added_chance(total_reduction: f64, current_total_chance: f64) -> f64
     }
 }
 
+fn level_default_chance(level: &str) -> Option<f64> {
+    match level {
+        "aji" => Some(default_chance::AJI),
+        "ki" => Some(default_chance::KI),
+        "chi" => Some(default_chance::CHI),
+        _ => None,
+    }
+}
+
 async fn add_friend(friend_info: FriendInfo) {
     let mut config = match read_config().await {
         Ok(config) => config,
@@ -153,6 +162,52 @@ pub async fn remove_friend(name: String) {
     if old_len == config.friends.len() {
         println!("Name \"{name}\" not found");
         return;
+    }
+
+    if let Err(err) = write_config(&config).await {
+        eprintln!("Failed to write data: {err}");
+    }
+}
+
+pub async fn edit_friend(name: String, new_name: Option<String>, new_level: Option<String>) {
+    if new_name.is_none() && new_level.is_none() {
+        println!("No changes requested");
+        return;
+    }
+
+    let mut config = match read_config().await {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("Failed to read data: {err}");
+            return;
+        }
+    };
+
+    let Some(index) = config.friends.iter().position(|friend| friend.name == name) else {
+        println!("Name \"{name}\" not found");
+        return;
+    };
+
+    if let Some(ref new_name_value) = new_name {
+        let name_taken = config
+            .friends
+            .iter()
+            .any(|friend| friend.name == *new_name_value && friend.name != name);
+        if name_taken {
+            println!("Name \"{new_name_value}\" already exists, please use a different name");
+            return;
+        }
+        config.friends[index].name = new_name_value.clone();
+    }
+
+    if let Some(new_level_value) = new_level {
+        if let Some(default_level_chance) = level_default_chance(&new_level_value) {
+            config.friends[index].level = new_level_value;
+            config.friends[index].chance = default_level_chance;
+        } else {
+            println!("Invalid level");
+            return;
+        }
     }
 
     if let Err(err) = write_config(&config).await {
