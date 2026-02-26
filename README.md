@@ -31,6 +31,7 @@ cargo install akc
 
 # Usage
 `akc` works by keeping your friends' names, suggesting you connect them based on their closeness. The closer and less suggested by `akc` they are, the more chance `akc` suggests you connect them. It's that simple.  
+Data is persisted in a local SQLite database.  
 
 By default, there are 3 levels of closeness as described in [history](#history), called aji (very close), ki (close), and chi (normal). In addition, there are 4 default connection methods: Hanging out, video call, call and text. These don't have an equal effect on the chance of the same friend being suggested again. If you hang out with a friend, `akc` will probably re-suggest him/her with far less probability than if you texted him/her. In other words, hanging out, video call, call, and text have the highest to lowest _cost_ respectively.  
 

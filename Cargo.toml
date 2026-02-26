@@ -17,6 +17,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
-confy = "0.6"
+dirs = "6"
 rand = "0.9"
-serde = { version = "1", features = ["derive"] }
+sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio-rustls"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

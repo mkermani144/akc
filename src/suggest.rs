@@ -6,6 +6,6 @@ use crate::config;
 #[command(about = "Suggests a friend to connect with randomly")]
 pub struct SuggestCommand {}
 
-pub fn handle() {
-    config::suggest()
+pub async fn handle() {
+    config::suggest().await
 }

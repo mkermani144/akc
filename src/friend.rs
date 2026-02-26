@@ -22,11 +22,11 @@ pub struct Friend {
     command: FriendCommand,
 }
 
-pub fn handle(args: Friend) {
+pub async fn handle(args: Friend) {
     match args.command {
-        FriendCommand::Aji(name_wrapper) => config::add_aji(name_wrapper.name),
-        FriendCommand::Ki(name_wrapper) => config::add_ki(name_wrapper.name),
-        FriendCommand::Chi(name_wrapper) => config::add_chi(name_wrapper.name),
-        FriendCommand::Ls => config::list_friends(),
+        FriendCommand::Aji(name_wrapper) => config::add_aji(name_wrapper.name).await,
+        FriendCommand::Ki(name_wrapper) => config::add_ki(name_wrapper.name).await,
+        FriendCommand::Chi(name_wrapper) => config::add_chi(name_wrapper.name).await,
+        FriendCommand::Ls => config::list_friends().await,
     }
 }
