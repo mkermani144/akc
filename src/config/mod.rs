@@ -548,6 +548,24 @@ pub async fn undo_memory() {
     }
 }
 
+pub async fn remove_memory(id: i64) {
+    match delete_memory(id).await {
+        Ok(true) => {}
+        Ok(false) => {
+            println!("Memory id {id} not found");
+            return;
+        }
+        Err(err) => {
+            eprintln!("Failed to delete memory: {err}");
+            return;
+        }
+    }
+
+    if let Err(err) = rebuild_chances_from_memories().await {
+        eprintln!("Failed to rebuild chances: {err}");
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{deserialize_memory_names, get_unit_added_chance, serialize_memory_names};

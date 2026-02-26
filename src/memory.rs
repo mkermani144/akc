@@ -7,6 +7,11 @@ pub struct MemoryCommandBase {
     names: Vec<String>,
 }
 
+#[derive(Args)]
+pub struct MemoryIdCommandBase {
+    id: i64,
+}
+
 #[derive(Subcommand)]
 #[command(about = "Add a memory with one or more friends")]
 pub enum MemoryCommand {
@@ -16,6 +21,7 @@ pub enum MemoryCommand {
     Text(MemoryCommandBase),
     Suggest,
     Undo,
+    Remove(MemoryIdCommandBase),
 }
 
 #[derive(Parser)]
@@ -34,5 +40,6 @@ pub async fn handle(args: Memory) {
         MemoryCommand::Text(names_wrapper) => config::add_text(&names_wrapper.names).await,
         MemoryCommand::Suggest => config::suggest().await,
         MemoryCommand::Undo => config::undo_memory().await,
+        MemoryCommand::Remove(args) => config::remove_memory(args.id).await,
     }
 }
