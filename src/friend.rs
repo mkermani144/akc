@@ -27,6 +27,8 @@ pub struct EditFriendCommand {
 pub struct ListFriendsCommand {
     #[arg(long = "type")]
     friend_type: Option<FriendLevel>,
+    #[arg(long = "sort-chance")]
+    sort_chance: bool,
 }
 
 #[derive(Subcommand)]
@@ -67,7 +69,7 @@ pub async fn handle(args: Friend) {
                 FriendLevel::Ki => "ki".to_owned(),
                 FriendLevel::Chi => "chi".to_owned(),
             });
-            config::list_friends(friend_type).await
+            config::list_friends(friend_type, args.sort_chance).await
         }
     }
 }

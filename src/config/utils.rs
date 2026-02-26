@@ -77,6 +77,22 @@ pub fn list_friends(config: &AkcConfig) -> String {
     friends_vector.join("\n")
 }
 
+pub fn list_friends_by_chance(config: &AkcConfig) -> String {
+    let mut friends_vector = config.friends.iter().collect::<Vec<&FriendInfo>>();
+    friends_vector.sort_by(|left, right| {
+        right
+            .chance
+            .total_cmp(&left.chance)
+            .then_with(|| left.name.cmp(&right.name))
+    });
+
+    friends_vector
+        .iter()
+        .map(|friend| format!("{} ({:.2})", friend.name, friend.chance))
+        .collect::<Vec<String>>()
+        .join("\n")
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -266,5 +282,31 @@ mod test {
 
         let friends = list_friends(&config);
         assert_eq!(friends, "Doe\nDoe2\nJohn".to_owned());
+    }
+
+    #[test]
+    fn test_list_friends_by_chance() {
+        let config = AkcConfig {
+            friends: vec![
+                FriendInfo {
+                    name: "John".to_owned(),
+                    chance: 1.5,
+                    level: "aji".to_owned(),
+                },
+                FriendInfo {
+                    name: "Doe".to_owned(),
+                    chance: 5.0,
+                    level: "ki".to_owned(),
+                },
+                FriendInfo {
+                    name: "Abe".to_owned(),
+                    chance: 5.0,
+                    level: "chi".to_owned(),
+                },
+            ],
+        };
+
+        let friends = list_friends_by_chance(&config);
+        assert_eq!(friends, "Abe (5.00)\nDoe (5.00)\nJohn (1.50)");
     }
 }
