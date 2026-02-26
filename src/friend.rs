@@ -13,6 +13,7 @@ pub enum FriendCommand {
     Aji(FriendCommandBase),
     Ki(FriendCommandBase),
     Chi(FriendCommandBase),
+    Rm(FriendCommandBase),
     Ls,
 }
 
@@ -27,6 +28,7 @@ pub async fn handle(args: Friend) {
         FriendCommand::Aji(name_wrapper) => config::add_aji(name_wrapper.name).await,
         FriendCommand::Ki(name_wrapper) => config::add_ki(name_wrapper.name).await,
         FriendCommand::Chi(name_wrapper) => config::add_chi(name_wrapper.name).await,
+        FriendCommand::Rm(name_wrapper) => config::remove_friend(name_wrapper.name).await,
         FriendCommand::Ls => config::list_friends().await,
     }
 }

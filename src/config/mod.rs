@@ -139,6 +139,27 @@ async fn add_friend(friend_info: FriendInfo) {
     }
 }
 
+pub async fn remove_friend(name: String) {
+    let mut config = match read_config().await {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("Failed to read data: {err}");
+            return;
+        }
+    };
+
+    let old_len = config.friends.len();
+    config.friends.retain(|friend| friend.name != name);
+    if old_len == config.friends.len() {
+        println!("Name \"{name}\" not found");
+        return;
+    }
+
+    if let Err(err) = write_config(&config).await {
+        eprintln!("Failed to write data: {err}");
+    }
+}
+
 pub async fn add_aji(name: String) {
     add_friend(FriendInfo {
         name,
