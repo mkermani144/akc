@@ -125,6 +125,14 @@ fn level_default_chance(level: &str) -> Option<f64> {
     }
 }
 
+fn make_friend(name: String, level: &str) -> Option<FriendInfo> {
+    level_default_chance(level).map(|chance| FriendInfo {
+        name,
+        chance,
+        level: level.to_owned(),
+    })
+}
+
 async fn add_friend(friend_info: FriendInfo) {
     let mut config = match read_config().await {
         Ok(config) => config,
@@ -216,30 +224,65 @@ pub async fn edit_friend(name: String, new_name: Option<String>, new_level: Opti
 }
 
 pub async fn add_aji(name: String) {
-    add_friend(FriendInfo {
-        name,
-        chance: default_chance::AJI,
-        level: "aji".to_owned(),
-    })
-    .await;
+    if let Some(friend_info) = make_friend(name, "aji") {
+        add_friend(friend_info).await;
+    }
 }
 
 pub async fn add_ki(name: String) {
-    add_friend(FriendInfo {
-        name,
-        chance: default_chance::KI,
-        level: "ki".to_owned(),
-    })
-    .await;
+    if let Some(friend_info) = make_friend(name, "ki") {
+        add_friend(friend_info).await;
+    }
 }
 
 pub async fn add_chi(name: String) {
-    add_friend(FriendInfo {
-        name,
-        chance: default_chance::CHI,
-        level: "chi".to_owned(),
-    })
-    .await;
+    if let Some(friend_info) = make_friend(name, "chi") {
+        add_friend(friend_info).await;
+    }
+}
+
+pub async fn add_many_friends(level: String, names: Vec<String>) {
+    if names.is_empty() {
+        println!("Please specify at least one name");
+        return;
+    }
+
+    let mut config = match read_config().await {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("Failed to read data: {err}");
+            return;
+        }
+    };
+
+    let mut duplicate_names = Vec::new();
+    let mut added_count = 0;
+
+    for name in names {
+        if utils::is_name_duplicate(&config, &name) {
+            duplicate_names.push(name);
+            continue;
+        }
+
+        if let Some(friend_info) = make_friend(name, &level) {
+            config.friends.push(friend_info);
+            added_count += 1;
+        }
+    }
+
+    if added_count > 0 {
+        if let Err(err) = write_config(&config).await {
+            eprintln!("Failed to write data: {err}");
+            return;
+        }
+    }
+
+    if !duplicate_names.is_empty() {
+        println!(
+            "Skipped existing names: {}",
+            duplicate_names.join(", ")
+        );
+    }
 }
 
 pub async fn list_friends(level_filter: Option<String>, sort_chance: bool) {
