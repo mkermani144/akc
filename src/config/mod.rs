@@ -22,6 +22,7 @@ mod default_reduction {
 
 const APP_DIR_NAME: &str = "akc";
 const DB_FILE_NAME: &str = "akc.db";
+const MEMORY_NAMES_SEPARATOR: &str = "\n";
 
 pub struct FriendInfo {
     name: String,
@@ -65,6 +66,16 @@ async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
             name TEXT PRIMARY KEY,
             chance REAL NOT NULL,
             level TEXT NOT NULL
+        )",
+    )
+    .execute(pool)
+    .await?;
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS memories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            kind TEXT NOT NULL,
+            names TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         )",
     )
     .execute(pool)
@@ -114,6 +125,20 @@ fn get_unit_added_chance(total_reduction: f64, current_total_chance: f64) -> f64
     } else {
         total_reduction / current_total_chance
     }
+}
+
+fn serialize_memory_names(names: &[String]) -> String {
+    names.join(MEMORY_NAMES_SEPARATOR)
+}
+
+async fn save_memory(kind: &str, names: &[String]) -> Result<(), sqlx::Error> {
+    let pool = open_pool().await?;
+    sqlx::query("INSERT INTO memories (kind, names) VALUES (?1, ?2)")
+        .bind(kind)
+        .bind(serialize_memory_names(names))
+        .execute(&pool)
+        .await?;
+    Ok(())
 }
 
 fn level_default_chance(level: &str) -> Option<f64> {
@@ -345,7 +370,7 @@ pub async fn suggest() {
     println!("Suggested friend: {}", suggested_friend.name);
 }
 
-async fn add_memory(reduction: f64, names: &[String]) {
+async fn add_memory(kind: &str, reduction: f64, names: &[String]) {
     if names.is_empty() {
         println!("Please specify at least one name");
         return;
@@ -380,29 +405,34 @@ async fn add_memory(reduction: f64, names: &[String]) {
 
         if let Err(err) = write_config(&config).await {
             eprintln!("Failed to write data: {err}");
+            return;
+        }
+
+        if let Err(err) = save_memory(kind, names).await {
+            eprintln!("Failed to save memory: {err}");
         }
     }
 }
 
 pub async fn add_hangout(names: &[String]) {
-    add_memory(default_reduction::HANGOUT, names).await
+    add_memory("hangout", default_reduction::HANGOUT, names).await
 }
 
 pub async fn add_video_call(names: &[String]) {
-    add_memory(default_reduction::VIDEO_CALL, names).await
+    add_memory("video-call", default_reduction::VIDEO_CALL, names).await
 }
 
 pub async fn add_call(names: &[String]) {
-    add_memory(default_reduction::CALL, names).await
+    add_memory("call", default_reduction::CALL, names).await
 }
 
 pub async fn add_text(names: &[String]) {
-    add_memory(default_reduction::TEXT, names).await
+    add_memory("text", default_reduction::TEXT, names).await
 }
 
 #[cfg(test)]
 mod test {
-    use super::get_unit_added_chance;
+    use super::{get_unit_added_chance, serialize_memory_names};
 
     #[test]
     fn test_get_unit_added_chance_when_total_is_zero() {
@@ -412,5 +442,11 @@ mod test {
     #[test]
     fn test_get_unit_added_chance_when_total_is_positive() {
         assert_eq!(get_unit_added_chance(1.0, 2.0), 0.5);
+    }
+
+    #[test]
+    fn test_serialize_memory_names() {
+        let names = vec!["A".to_owned(), "B".to_owned()];
+        assert_eq!(serialize_memory_names(&names), "A\nB");
     }
 }
