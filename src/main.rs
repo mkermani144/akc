@@ -11,6 +11,7 @@ enum AkcCommand {
     Friend(friend::Friend),
     Suggest(suggest::SuggestCommand),
     Memory(memory::Memory),
+    DbPath,
 }
 
 #[tokio::main]
@@ -21,5 +22,6 @@ async fn main() {
         AkcCommand::Friend(friend_args) => friend::handle(friend_args).await,
         AkcCommand::Suggest(_) => suggest::handle().await,
         AkcCommand::Memory(memory_args) => memory::handle(memory_args).await,
+        AkcCommand::DbPath => config::print_db_path(),
     }
 }

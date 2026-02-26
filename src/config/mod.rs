@@ -54,6 +54,10 @@ fn db_path() -> PathBuf {
     }
 }
 
+pub fn print_db_path() {
+    println!("{}", db_path().display());
+}
+
 async fn open_pool() -> Result<SqlitePool, sqlx::Error> {
     let options = SqliteConnectOptions::new()
         .filename(db_path())
